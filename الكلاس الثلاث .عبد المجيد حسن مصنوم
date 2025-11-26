@@ -1,0 +1,180 @@
+import java.util.List;
+import java.util.Scanner;
+
+public class PayrollSystem {
+
+    private static PayrollService service = new PayrollService();
+    private static Scanner scanner = new Scanner(System.in);
+
+    public static void main(String[] args) {
+        System.out.println("🌟 نظام إدارة الرواتب - Java Console Application 🌟");
+        loadInitialData(); // تحميل بيانات تجريبية
+
+        int choice;
+        do {
+            displayMenu();
+            if (scanner.hasNextInt()) {
+                choice = scanner.nextInt();
+                scanner.nextLine(); // استهلاك السطر الجديد
+                handleChoice(choice);
+            } else {
+                // 3. المتطلبات الإضافية: رسائل تنبيه وتأكيد داخل الكونسول
+                System.out.println("\n❌ إدخال غير صحيح. الرجاء إدخال رقم من القائمة.");
+                scanner.nextLine(); // استهلاك الإدخال غير الصحيح
+                choice = 0; // لضمان الاستمرار في الحلقة
+            }
+        } while (choice != 7);
+
+        System.out.println("\n👋 شكراً لاستخدام نظام إدارة الرواتب. إلى اللقاء!");
+        scanner.close();
+    }
+
+    // --- وظائف مساعدة ---
+
+    private static void displayMenu() {
+        System.out.println("\n--- القائمة الرئيسية ---");
+        System.out.println("1. إضافة موظف جديد");
+        System.out.println("2. عرض جميع الموظفين");
+        System.out.println("3. البحث عن موظف (بالرقم أو الاسم)");
+        System.out.println("4. تحديث راتب موظف");
+        System.out.println("5. حذف موظف");
+        System.out.println("6. ترتيب وعرض الموظفين حسب الراتب (اختياري)");
+        System.out.println("7. الخروج");
+        System.out.print("الرجاء اختيار عملية: ");
+    }
+
+    private static void handleChoice(int choice) {
+        switch (choice) {
+            case 1:
+                addEmployee();
+                break;
+            case 2:
+                displayAllEmployees(service.getAllEmployees(), "جميع الموظفين");
+                break;
+            case 3:
+                searchEmployee();
+                break;
+            case 4:
+                updateEmployeeSalary();
+                break;
+            case 5:
+                removeEmployee();
+                break;
+            case 6:
+                displayAllEmployees(service.getEmployeesSortedBySalary(), "الموظفين مرتبين حسب الراتب (تنازلي)");
+                break;
+            case 7:
+                // الخروج يتم في الدالة الرئيسية
+                break;
+            default:
+                System.out.println("\n❌ خيار غير صالح. الرجاء الاختيار بين 1 و 7.");
+        }
+    }
+
+    // --- تطبيق العمليات الوظيفية ---
+
+    private static void addEmployee() {
+        System.out.print("\nأدخل رقم الموظف (ID): ");
+        String id = scanner.nextLine();
+        System.out.print("أدخل اسم الموظف: ");
+        String name = scanner.nextLine();
+        System.out.print("أدخل الراتب الشهري: ");
+        // 3. المتطلبات الإضافية: التحقق من صحة المدخلات (للرقم)
+        if (scanner.hasNextDouble()) {
+            double salary = scanner.nextDouble();
+            scanner.nextLine();
+            if (service.addEmployee(new Employee(id, name, salary))) {
+                // رسالة تأكيد
+                System.out.println("\n✅ تم إضافة الموظف بنجاح.");
+            } else {
+                // رسالة تنبيه
+                System.out.println("\n⚠️ فشل الإضافة. رقم الموظف (ID) موجود بالفعل.");
+            }
+        } else {
+            System.out.println("\n❌ قيمة الراتب غير صحيحة. يرجى إدخال رقم.");
+            scanner.nextLine();
+        }
+    }
+
+    private static void removeEmployee() {
+        System.out.print("\nأدخل رقم الموظف لحذفه: ");
+        String id = scanner.nextLine();
+        if (service.removeEmployeeById(id)) {
+            System.out.println("\n✅ تم حذف الموظف بنجاح.");
+        } else {
+            System.out.println("\n⚠️ لم يتم العثور على موظف بالرقم: " + id);
+        }
+    }
+
+    private static void updateEmployeeSalary() {
+        System.out.print("\nأدخل رقم الموظف لتحديث راتبه: ");
+        String id = scanner.nextLine();
+        System.out.print("أدخل الراتب الجديد: ");
+        if (scanner.hasNextDouble()) {
+            double newSalary = scanner.nextDouble();
+            scanner.nextLine();
+            if (service.updateEmployeeSalary(id, newSalary)) {
+                System.out.println("\n✅ تم تحديث راتب الموظف بنجاح.");
+            } else {
+                System.out.println("\n⚠️ لم يتم العثور على موظف بالرقم: " + id);
+            }
+        } else {
+            System.out.println("\n❌ قيمة الراتب غير صحيحة. يرجى إدخال رقم.");
+            scanner.nextLine();
+        }
+    }
+    
+    private static void searchEmployee() {
+        System.out.print("\nالبحث برقم الموظف (1) أو بالاسم (2)؟ (1/2): ");
+        String choice = scanner.nextLine();
+
+        if (choice.equals("1")) {
+            System.out.print("أدخل رقم الموظف للبحث: ");
+            Employee emp = service.getEmployeeById(scanner.nextLine());
+            if (emp != null) {
+                displayAllEmployees(List.of(emp), "نتائج البحث بالرقم");
+            } else {
+                System.out.println("\n⚠️ لم يتم العثور على موظف بهذا الرقم.");
+            }
+        } else if (choice.equals("2")) {
+            System.out.print("أدخل جزء من اسم الموظف للبحث: ");
+            List<Employee> results = service.searchEmployeesByName(scanner.nextLine());
+            if (!results.isEmpty()) {
+                displayAllEmployees(results, "نتائج البحث بالاسم");
+            } else {
+                System.out.println("\n⚠️ لم يتم العثور على موظفين بهذا الاسم.");
+            }
+        } else {
+             System.out.println("\n❌ خيار غير صالح. يرجى اختيار 1 أو 2.");
+        }
+    }
+
+
+    private static void displayAllEmployees(List<Employee> employees, String title) {
+        // 5. عرض جميع السجلات بطريقة منظمة (List)
+        System.out.println("\n--- " + title + " (" + employees.size() + " سجل) ---");
+        if (employees.isEmpty()) {
+            System.out.println("لا توجد سجلات لعرضها.");
+            return;
+        }
+
+        // تنسيق عرض الجدول
+        System.out.println("+------------+----------------------+------------+");
+        System.out.println("| ID         | الاسم                | الراتب     |");
+        System.out.println("+------------+----------------------+------------+");
+
+        for (Employee emp : employees) {
+            System.out.println(emp); // استخدام toString المُعَدَّل
+        }
+
+        System.out.println("+------------+----------------------+------------+");
+    }
+
+    private static void loadInitialData() {
+        // بيانات أولية لتبسيط الاختبار
+        service.addEmployee(new Employee("E101", "أحمد محمد", 5500.00));
+        service.addEmployee(new Employee("E102", "فاطمة علي", 8200.50));
+        service.addEmployee(new Employee("E103", "سعيد خالد", 4100.00));
+        service.addEmployee(new Employee("E104", "ندى محمود", 7500.00));
+    }
+}

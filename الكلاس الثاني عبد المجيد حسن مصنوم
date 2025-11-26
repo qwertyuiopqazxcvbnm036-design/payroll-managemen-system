@@ -1,0 +1,74 @@
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class PayrollService {
+    // 1. المتطلبات التقنية: الاعتماد على ملف واحد (List) لتخزين السجلات
+    private List<Employee> employees;
+
+    public PayrollService() {
+        // الابتعاد عن استخدام Classes متعددة والاعتماد على ملف واحد (List)
+        this.employees = new ArrayList<>();
+    }
+
+    // --- العمليات الوظيفية (Functional Requirements) ---
+
+    // 1. إضافة سجل جديد
+    public boolean addEmployee(Employee emp) {
+        // 3. المتطلبات الإضافية: التحقق من صحة المدخلات (تجنب التكرار في ID)
+        if (getEmployeeById(emp.getEmployeeId()) == null) {
+            employees.add(emp);
+            return true;
+        }
+        return false;
+    }
+
+    // 2. حذف سجل واحد أو عدة سجلات
+    public boolean removeEmployeeById(String id) {
+        // حذف موظف بناءً على الرقم
+        return employees.removeIf(e -> e.getEmployeeId().equalsIgnoreCase(id));
+    }
+
+    // 3. تعديل البيانات الموجودة
+    public boolean updateEmployeeSalary(String id, double newSalary) {
+        // تحديث حقل واحد أو أكثر (هنا: الراتب)
+        Employee emp = getEmployeeById(id);
+        if (emp != null) {
+            emp.setSalary(newSalary);
+            return true;
+        }
+        return false;
+    }
+
+    // 4. البحث عن سجل باستخدام معيار واحد أو أكثر (بالاسم أو الرقم)
+    public Employee getEmployeeById(String id) {
+        for (Employee emp : employees) {
+            if (emp.getEmployeeId().equalsIgnoreCase(id)) {
+                return emp;
+            }
+        }
+        return null;
+    }
+
+    public List<Employee> searchEmployeesByName(String partialName) {
+        // استخدام Stream API للبحث الفعال
+        return employees.stream()
+                .filter(e -> e.getName().toLowerCase().contains(partialName.toLowerCase()))
+                .collect(Collectors.toList());
+    }
+    
+    // 5. عرض جميع السجلات بطريقة منظمة (List)
+    public List<Employee> getAllEmployees() {
+        return employees;
+    }
+
+    // --- المتطلبات الإضافية الاختيارية ---
+
+    // 6. ترتيب أو تصفية السجلات (الترتيب حسب الراتب)
+    public List<Employee> getEmployeesSortedBySalary() {
+        return employees.stream()
+                .sorted(Comparator.comparing(Employee::getSalary).reversed())
+                .collect(Collectors.toList());
+    }
+}
