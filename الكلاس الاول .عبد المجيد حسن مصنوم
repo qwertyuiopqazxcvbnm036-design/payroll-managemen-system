@@ -1,0 +1,38 @@
+public class Employee {
+    // 1. المتطلبات الوظيفية: حقول بيانات وصفية
+    private String employeeId;
+    private String name;
+    private double salary; // الراتب الشهري
+
+    // 2. المتطلبات التقنية: (Encapsulation - التغليف)
+    // Constructor
+    public Employee(String employeeId, String name, double salary) {
+        this.employeeId = employeeId;
+        this.name = name;
+        this.salary = salary;
+    }
+
+    // Getters
+    public String getEmployeeId() {
+        return employeeId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public double getSalary() {
+        return salary;
+    }
+
+    // Setters (للتحديث)
+    public void setSalary(double salary) {
+        this.salary = salary;
+    }
+
+    // Overriding toString for easy display
+    @Override
+    public String toString() {
+        return String.format("| %-10s | %-20s | %-10.2f |", employeeId, name, salary);
+    }
+}
